@@ -46,8 +46,9 @@ function startSensorWatch(socket) {
         //console.log("Celsius Temperature "+celsius_temperature); 
         var fahrenheit_temperature = (celsius_temperature * (9 / 5)) + 32;
         console.log("Fahrenheit Temperature: " + fahrenheit_temperature);
-        socket.emit("message", fahrenheit_temperature);
-        
+
+        //send to COAP broker
+        //socket.emit("message", fahrenheit_temperature);
         coapWriable.end(new Buffer(fahrenheit_temperature));
     }, 4000);
 }
