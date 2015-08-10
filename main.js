@@ -32,6 +32,7 @@ Description: Read Temperature Sensor and send temperature in degrees of Fahrenhe
 function startSensorWatch(socket) {
     'use strict';
 
+    //connect to CoAP server
     var coapWriable = coap.request('coap://localhost:8000/object/testman/send');
 
     setInterval(function () {
@@ -46,7 +47,8 @@ function startSensorWatch(socket) {
         var fahrenheit_temperature = (celsius_temperature * (9 / 5)) + 32;
         console.log("Fahrenheit Temperature: " + fahrenheit_temperature);
         socket.emit("message", fahrenheit_temperature);
-        coapWriable.end(new Buffer(data));
+        
+        coapWriable.end(new Buffer(fahrenheit_temperature));
     }, 4000);
 }
 
@@ -67,9 +69,6 @@ io.on('connection', function (socket) {
     console.log('a user connected');
     //Emits an event along with a message
     socket.emit('connected', 'Welcome');
-
-    //Start CoAP
-    startSensorClient();
 
     //Start watching Sensors connected to Galileo board
     startSensorWatch(socket);
