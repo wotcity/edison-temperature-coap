@@ -29,13 +29,14 @@ Function: startSensorWatch(socket)
 Parameters: socket - client communication channel
 Description: Read Temperature Sensor and send temperature in degrees of Fahrenheit every 4 seconds
 */
-function startSensorWatch(socket) {
+var startSensorWatch = function() {
     'use strict';
 
-    //connect to CoAP server
-    var coapWriable = coap.request('coap://localhost:8000/object/testman/send');
-
     setInterval(function () {
+	var data;
+        //connect to CoAP server
+        var coapWriable = coap.request('coap://192.168.0.100:8000/object/testman/send');
+
         var a = myAnalogPin.read();
         console.log("Analog Pin (A0) Output: " + a);
         //console.log("Checking....");
@@ -45,37 +46,19 @@ function startSensorWatch(socket) {
         var celsius_temperature = 1 / (Math.log(resistance / 10000) / B + 1 / 298.15) - 273.15;//convert to temperature via datasheet ;
         //console.log("Celsius Temperature "+celsius_temperature); 
         var fahrenheit_temperature = (celsius_temperature * (9 / 5)) + 32;
-        console.log("Fahrenheit Temperature: " + fahrenheit_temperature);
+
+	var obj = {
+	    temperature: fahrenheit_temperature
+	};
+	data = JSON.stringify(obj);
+
+        console.log("Sending: " + data);
 
         //send to COAP broker
-        //socket.emit("message", fahrenheit_temperature);
-        coapWriable.end(new Buffer(fahrenheit_temperature));
+        coapWriable.end(new Buffer(data));
     }, 4000);
 }
 
 console.log("Sample Reading Grove Kit Temperature Sensor");
 
-//Create Socket.io server
-var http = require('http');
-var app = http.createServer(function (req, res) {
-    'use strict';
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('<h1>Hello world from Intel IoT platform!</h1>');
-}).listen(1337);
-var io = require('socket.io')(app);
-
-//Attach a 'connection' event handler to the server
-io.on('connection', function (socket) {
-    'use strict';
-    console.log('a user connected');
-    //Emits an event along with a message
-    socket.emit('connected', 'Welcome');
-
-    //Start watching Sensors connected to Galileo board
-    startSensorWatch(socket);
-
-    //Attach a 'disconnect' event handler to the socket
-    socket.on('disconnect', function () {
-        console.log('user disconnected');
-    });
-});
+startSensorWatch();
